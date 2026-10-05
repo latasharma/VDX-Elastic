@@ -7,7 +7,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.latasharma.vdxelastic",
+      "bundleIdentifier": "org.name.VDXElastic",
       "appleTeamId": "8LAX5EV6SA",
       "buildNumber": "2",
       "infoPlist": {
