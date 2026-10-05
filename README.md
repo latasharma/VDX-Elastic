@@ -1,47 +1,27 @@
-# VDX Elastic
+# VDX Elastic — mobile early access 0.2
 
-A mobile-first Expo application for iOS and Android, with an execution node tree that shows what happened at each step.
+Expo / React Native for iOS and Android. Approved expressive violet/lime design.
 
-## Current build
+## Working flows
+- Type a constrained request or dictate an editable English transcript.
+- `remember I parked on level 2` saves local persistent memory.
+- `find memory parked` searches saved notes by substring.
+- `call +12025550123` asks approval, then hands the number to the operating system's phone interface.
+- `message +12025550123: I am on my way` asks approval and opens the native SMS composer. You control sending there.
+- Node states and result receipts reflect actual storage and device adapter responses; unknown SMS outcomes remain unverified.
+- Memory tab supports deletion with confirmation.
 
-The first development milestone is an interactive **simulation**, not a phone controller. It uses a fictional contact and never accesses your microphone, contacts, phone dialer or external tools.
+Example numbers are placeholders. Replace them before testing actual communication. No contact-name lookup or arbitrary language assistant is implemented. Speech may use the OS provider's online services. Memory uses ordinary app storage (not a secrets vault); no cloud sync. Run history is session-only.
 
-- Visual connected-node view and an accessible Steps view.
-- An explicit approval gate before simulated calling handoff.
-- Node details, ordered event history and labelled simulation evidence.
-- Cancellation and a deterministic, tested run-state reducer.
-- Shared React Native UI and TypeScript contracts.
+## Development
+Use Node 24, `npm ci`, then `npm run typecheck` and `npm test`.
+Native module changes require a fresh native build; Expo Go and the 0.1 demo binary are insufficient.
 
-Not connected yet: authentication, server persistence, device pairing, speech recognition, native phone actions, Siri, Alexa or MCP tools. A successful demo means only that the simulation completed.
+Generate native projects with `npx expo prebuild`; preserve local signing/customizations before regeneration. Then `npm run ios` or `npm run android`. For Xcode open `ios/VDXElastic.xcworkspace` after CocoaPods installation, select your team and use Release for a standalone app.
 
-## Run locally
+EAS profiles: preview for an internal phone build, simulator for iOS Simulator. Device signing is required for iPhone.
 
-Use Node 24 and npm. Install dependencies with `npm ci`.
+## Scope
+This is a local execution slice, not the complete Elastic server. MCP adapters, server orchestration, durable run replay, multi-device pairing and branching node layout remain planned. Legacy simulation model/tests remain as reference; the app now uses local intent/action adapters.
 
-```sh
-npm run ios     # native iOS development build
-npm run android # native Android development build
-npm test
-npm run typecheck
-npm run export:all
-```
-
-For native development builds, use `npm run ios` or `npm run android` with the appropriate Xcode/Android SDK and device configuration. Native build and physical-phone validation are separate release gates; a passing web build does not establish them.
-
-## Layout
-
-- `apps/mobile/App.tsx`: shared Expo application, graph and step views.
-- `packages/run-model/src`: deterministic simulation contracts, reducer and tests.
-- `docs`: architecture, migration audit and build plan.
-
-## Plan
-
-Start with [current Expo decisions](docs/Elastic-Expo-and-Voice-Decision.md), [design and node-tree specification](docs/Elastic-Design-Document.md), and [VDX reuse audit](docs/VDX-REUSE-AUDIT.md). Earlier planning sections have explicit supersession notices.
-
-The next milestone is a durable Core API and secure device pairing, followed by separately verified iOS/Android calling handoffs. No connected-call claim is made from opening a phone UI.
-
-## Source provenance
-
-This foundation is newly written for VDX-Elastic. The existing public VDX repository was inspected as a reference, but its source was not copied. Its reuse/license status needs resolution before importing code.
-
-A browser preview (`npm run web`) is an optional developer aid, not the mobile product or a substitute for native validation.
+See docs/TESTING-0.2.md for the acceptance walkthrough. Native build success and physical-device validation are tracked separately. Dependency audit has outstanding transitive findings; this is not approved for public release.
