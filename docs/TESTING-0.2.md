@@ -21,3 +21,5 @@ Memory is ordinary app-local storage; don't save credentials or secrets. Runs ar
 TypeScript and 20 automated tests pass. Shared web-renderer checks verified memory save, persistence across reload, substring retrieval, and approval cancellation without a device handoff. These are not physical-phone tests. Android Release compilation passed with 4 GB Gradle heap and two workers; APK signature verified. iOS CocoaPods installed all native modules successfully and the existing Apple team was preserved. iOS native compilation is pending.
 
 Android installer: https://github.com/latasharma/VDX-Elastic/releases/tag/v0.2.0-preview.1
+
+The iOS cloud submission failed before compilation with HTTP 503 Service Unavailable, including a retry with the latest EAS CLI. Local xcodebuild also failed to load the workspace in the restricted shell; the CocoaPods-generated workspace exists. iOS compilation remains unverified; open the updated workspace in Xcode and build with the configured team. No 0.2 simulator artifact was produced.
