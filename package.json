@@ -1,0 +1,31 @@
+{
+  "name": "vdx-elastic",
+  "version": "0.1.0",
+  "main": "index.ts",
+  "dependencies": {
+    "expo": "~57.0.26",
+    "expo-dev-client": "~57.0.19",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/react": "~19.2.2",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "test": "node --import tsx --test packages/run-model/src/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "export:web": "expo export --platform web",
+    "export:all": "expo export --platform all"
+  },
+  "private": true
+}

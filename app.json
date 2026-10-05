@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "VDX Elastic",
+    "slug": "vdx-elastic",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.latasharma.vdxelastic"
+    },
+    "android": {
+      "package": "com.latasharma.vdxelastic"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
