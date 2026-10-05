@@ -35,3 +35,12 @@ The simulator profile produces a Mac iOS Simulator app, which cannot install on 
 - production: reserved for later store distribution; not release-approved
 
 Expo project: https://expo.dev/accounts/latasharma/projects/vdx-elastic
+
+## Verified build status — October 5, 2026
+- Android ARM64 release-mode APK: compiled successfully (547 Gradle tasks), signature verified.
+- Android package SHA-256: 5134b1054c19a6f76cb8362c85a7672e549d15da76e9e92c7886a8fa3cc3daea.
+- Download: https://github.com/latasharma/VDX-Elastic/releases/tag/v0.1.0-preview.1
+- Emulator launch could not be validated: installed emulator exits with code 132 before ADB sees a device, including a cold-start retry.
+- iOS CocoaPods installation succeeded. Local xcodebuild failed to load the workspace in the sandbox; no local native iOS build was produced.
+- iOS Simulator EAS build: https://expo.dev/accounts/latasharma/projects/vdx-elastic/builds/e1f0b07d-ef24-4c95-a499-4a7d6cc8628e (submitted; completion pending).
+- iPhone EAS build: blocked because no suitable signing credentials are configured.
