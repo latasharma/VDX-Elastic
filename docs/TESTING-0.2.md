@@ -16,3 +16,8 @@ Install a new 0.2 native build. The old 0.1 APK and simulator app remain simulat
 Phone/SMS require a physical device with appropriate services. Simulator inability to call is expected and must produce an error, not a success receipt. OS speech availability varies; online processing can occur. No contacts permission is requested because this version accepts phone numbers directly.
 
 Memory is ordinary app-local storage; don't save credentials or secrets. Runs are session-only. This is a constrained local assistant, not a general-purpose AI service.
+
+## Verification recorded October 5, 2026
+TypeScript and 20 automated tests pass. Shared web-renderer checks verified memory save, persistence across reload, substring retrieval, and approval cancellation without a device handoff. These are not physical-phone tests. Android Release compilation passed with 4 GB Gradle heap and two workers; APK signature verified. iOS CocoaPods installed all native modules successfully and the existing Apple team was preserved. iOS native compilation is pending.
+
+Android installer: https://github.com/latasharma/VDX-Elastic/releases/tag/v0.2.0-preview.1
