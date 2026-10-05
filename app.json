@@ -14,6 +14,12 @@
     },
     "web": {
       "bundler": "metro"
+    },
+    "owner": "latasharma",
+    "extra": {
+      "eas": {
+        "projectId": "bb65ddd2-68c6-42a1-bee6-26576d9af7e6"
+      }
     }
   }
 }

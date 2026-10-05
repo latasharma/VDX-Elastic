@@ -8,3 +8,9 @@ web-build/
 .DS_Store
 android/
 ios/
+
+*.apk
+*.ipa
+credentials.json
+*.p12
+*.mobileprovision
