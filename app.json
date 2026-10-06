@@ -2,22 +2,23 @@
   "expo": {
     "name": "VDX Elastic",
     "slug": "vdx-elastic",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.name.VDXElastic",
       "appleTeamId": "8LAX5EV6SA",
-      "buildNumber": "2",
+      "buildNumber": "5",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Allow VDX Elastic to hear requests when you tap to speak.",
-        "NSSpeechRecognitionUsageDescription": "Allow VDX Elastic to convert your speech into an editable request."
+        "NSSpeechRecognitionUsageDescription": "Allow VDX Elastic to convert your speech into an editable request.",
+        "NSPhotoLibraryUsageDescription": "Allow VDX Elastic to access your photo library when you choose a photo to attach to a message."
       }
     },
     "android": {
       "package": "com.latasharma.vdxelastic",
-      "versionCode": 2
+      "versionCode": 5
     },
     "web": {
       "bundler": "metro"
