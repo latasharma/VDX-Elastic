@@ -9,16 +9,23 @@
       "supportsTablet": true,
       "bundleIdentifier": "org.name.VDXElastic",
       "appleTeamId": "8LAX5EV6SA",
-      "buildNumber": "5",
+      "buildNumber": "7",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Allow VDX Elastic to hear requests when you tap to speak.",
         "NSSpeechRecognitionUsageDescription": "Allow VDX Elastic to convert your speech into an editable request.",
-        "NSPhotoLibraryUsageDescription": "Allow VDX Elastic to access your photo library when you choose a photo to attach to a message."
+        "NSPhotoLibraryUsageDescription": "Allow VDX Elastic to access your photo library when you choose a photo to attach to a message.",
+        "NSContactsUsageDescription": "Allow VDX to use the contact you choose for your call or message.",
+        "LSApplicationQueriesSchemes": [
+          "whatsapp"
+        ]
       }
     },
     "android": {
       "package": "com.latasharma.vdxelastic",
-      "versionCode": 5
+      "versionCode": 6,
+      "blockedPermissions": [
+        "android.permission.WRITE_CONTACTS"
+      ]
     },
     "web": {
       "bundler": "metro"
@@ -36,7 +43,22 @@
           "microphonePermission": "Allow VDX Elastic to hear your spoken requests when you tap to speak.",
           "speechRecognitionPermission": "Allow VDX Elastic to turn your speech into an editable request."
         }
-      ]
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Allow VDX to use the contact you choose for your call or message."
+        }
+      ],
+      "./plugins/withWhatsApp"
     ]
   }
 }

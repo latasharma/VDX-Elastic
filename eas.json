@@ -21,6 +21,22 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "play-internal": {
+      "extends": "production",
+      "distribution": "store",
+      "environment": "production",
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "play-internal": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
     }
   }
 }

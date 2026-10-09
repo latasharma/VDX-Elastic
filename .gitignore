@@ -16,3 +16,7 @@ credentials.json
 *.mobileprovision
 
 .native-backups/
+
+# Backend state (never commit user requests or OAuth tokens)
+*.sqlite
+*.sqlite-*
