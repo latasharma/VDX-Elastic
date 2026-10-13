@@ -20,8 +20,8 @@ Deno.serve(async(req:Request)=>{
  const model=env('GEMINI_LIVE_MODEL')||'gemini-3.8-live';
  const setup={model:`models/${model}`,generationConfig:{responseModalities:['AUDIO']},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:instruction}]},tools};
  try{
- const r=await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},signal:AbortSignal.timeout(15000),body:JSON.stringify({uses:1,expireTime:new Date(Date.now()+10*60*1000).toISOString(),newSessionExpireTime:new Date(Date.now()+60000).toISOString(),liveConnectConstraints:{model:setup.model,config:{responseModalities:['AUDIO'],inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:setup.systemInstruction,tools}}})});
- if(!r.ok)return respond(502,{error:'Gemini could not start a session. Check the backend model, billing and API key.'});
+ const r=await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},signal:AbortSignal.timeout(15000),body:JSON.stringify({uses:1,expireTime:new Date(Date.now()+10*60*1000).toISOString(),newSessionExpireTime:new Date(Date.now()+60000).toISOString(),bidiGenerateContentSetup:setup})});
+ if(!r.ok){const failure=await r.json().catch(()=>({}));const detail=String(failure.error?.message||'Provider rejected session configuration.').replaceAll(key,'[redacted]').slice(0,600);return respond(502,{error:`Gemini could not start a session: ${detail}`,providerStatus:r.status});}
  const token=await r.json();if(typeof token.name!=='string')throw Error();
  return respond(200,{token:token.name,setup});
  }catch{return respond(502,{error:'Voice connection timed out. Try again.'});}

@@ -1,6 +1,6 @@
 # Gemini voice implementation
 
-Status: implemented; Edge Function and voice-rate-limit migration deployed to VDX Supabase. Anonymous endpoint test returns 401. Native device and live Gemini verification pending. Existing TestFlight/Play builds do not contain this code.
+Status: implemented; Edge Function and voice-rate-limit migration deployed to VDX Supabase. Anonymous endpoint test returns 401. Live verification on 2026-10-13 passed: authenticated token issuance (200), constrained WebSocket setup, and a generated PCM spoken reply. Temporary admin-created test accounts were removed; no confirmation emails were sent. Native microphone/playback testing remains pending. Existing TestFlight/Play builds do not contain this code.
 
 ## User flow
 
@@ -14,7 +14,7 @@ For a new environment, apply `supabase/migrations/202610130001_voice_sessions.sq
 
 Required Supabase function secret: `GEMINI_API_KEY`. Optional: `GEMINI_LIVE_MODEL` (default `gemini-3.8-live`). Verify model availability for the billing project before release. Never set `EXPO_PUBLIC_GEMINI_API_KEY`.
 
-The function uses Google's documented v1beta token endpoint and constrained Live WebSocket. Some SDK examples still show v1alpha; verify the deployed model/session with real credentials before distribution.
+The function uses the v1beta token endpoint and constrained Live WebSocket, verified with the configured key. The REST wire field is `bidiGenerateContentSetup` with the setup object directly inside it. `liveConnectConstraints` is an SDK field and was rejected by the live REST endpoint; do not copy it into the REST body. Model `gemini-3.8-live` accepted the session and returned PCM audio.
 
 The client sends raw mono PCM in memory and plays 24 kHz PCM replies using `react-native-audio-api`. No recording files, transcript database, analytics content logs, or session-resumption history are created. Google processes the audio under its API terms; temporary storage in VDX is not a promise about Google's retention.
 
