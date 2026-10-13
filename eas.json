@@ -11,7 +11,8 @@
       },
       "ios": {
         "buildConfiguration": "Release"
-      }
+      },
+      "environment": "production"
     },
     "simulator": {
       "extends": "preview",

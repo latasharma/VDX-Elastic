@@ -2,14 +2,14 @@
   "expo": {
     "name": "VDX Elastic",
     "slug": "vdx-elastic",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.name.VDXElastic",
       "appleTeamId": "8LAX5EV6SA",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Allow VDX Elastic to hear requests when you tap to speak.",
         "NSSpeechRecognitionUsageDescription": "Allow VDX Elastic to convert your speech into an editable request.",
@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "com.latasharma.vdxelastic",
-      "versionCode": 6,
+      "versionCode": 7,
       "blockedPermissions": [
         "android.permission.WRITE_CONTACTS"
       ]
