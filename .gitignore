@@ -20,3 +20,6 @@ credentials.json
 # Backend state (never commit user requests or OAuth tokens)
 *.sqlite
 *.sqlite-*
+
+# Supabase local CLI connection cache
+supabase/.temp/

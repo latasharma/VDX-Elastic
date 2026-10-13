@@ -1,3 +1,6 @@
+import { GeminiVoice, type VoiceState } from './lib/geminiVoice';
+import { type VoiceProposal } from '../../packages/voice/src';
+import { supabase } from './lib/supabase';
 import { Account } from './components/Account';
 import * as Contacts from 'expo-contacts/legacy';
 import {contactRequest,whatsappURL,approvalAnswer,type ContactRequest} from '../../packages/connections/src';
@@ -29,6 +32,33 @@ function Button({title,onPress,disabled=false,secondary=false}:{title:string;onP
 }
 export default function App(){const [fontsLoaded,fontError]=useFonts({Syne_700Bold,Newsreader_400Regular_Italic,DMMono_400Regular});if(!fontsLoaded&&!fontError)return <View style={{flex:1,backgroundColor:'#0A0712'}}/>;return <SafeAreaProvider><Workspace/></SafeAreaProvider>}
 function Workspace(){
+ const [geminiState,setGeminiState]=useState<VoiceState>('idle');
+ const [geminiReply,setGeminiReply]=useState('');
+ const [voiceProposal,setVoiceProposal]=useState<VoiceProposal|null>(null);
+ const gemini=useRef<GeminiVoice|null>(null);
+ const [voiceNotice,setVoiceNotice]=useState(false);
+ const voiceConsent=useRef(false);
+ async function startGemini(){
+ if(geminiState!=='idle'){await gemini.current?.stop();return;}
+ if(!voiceConsent.current){setVoiceNotice(true);return;}
+ stopVoice();setError('');setInput('');
+ if(!gemini.current)gemini.current=new GeminiVoice({state:setGeminiState,transcript:setInput,reply:setGeminiReply,proposal:setVoiceProposal,error:setError});
+ await gemini.current.start();
+ }
+ async function reviewVoiceProposal(){
+ const task=voiceProposal;if(!task)return;setVoiceProposal(null);
+ if(task.kind==='unavailable'){connectionNeeded(task.text!);return;}
+ if(task.kind==='call'||task.kind==='message'){
+ const recipient=task.recipient!;
+ if(!/^\+?[0-9 ()-]+$/.test(recipient)){setContactTask({kind:task.kind,recipient,channel:task.channel||'sms',body:task.body});setContactOptions([]);return;}
+ await submit(task.kind==='call'?`call ${recipient}`:`message ${recipient}: ${task.body}`,task.channel||'sms');
+ }else await submit(task.kind==='remember'?`remember ${task.text}`:`find memory ${task.text}`);
+ }
+ useEffect(()=>{
+ const subscription=supabase?.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')void gemini.current?.stop()});
+ return()=>{subscription?.data.subscription.unsubscribe();void gemini.current?.stop()};
+ },[]);
+
  const [contactTask,setContactTask]=useState<ContactRequest|null>(null);
  const [contactOptions,setContactOptions]=useState<{name:string;number:string}[]>([]);
  const [picking,setPicking]=useState(false);
@@ -56,7 +86,7 @@ function Workspace(){
  const finalApprovalTranscript=useRef('');
  const acceptingSpeech=useRef(false);
  const approvalListening=useRef<string|null>(null);
- function stopVoice(){acceptingSpeech.current=false;approvalListening.current=null;pendingTranscript.current='';finalApprovalTranscript.current='';try{Speech.abort()}catch{}void Talk.stop().catch(()=>{});}
+ function stopVoice(){void gemini.current?.stop();acceptingSpeech.current=false;approvalListening.current=null;pendingTranscript.current='';finalApprovalTranscript.current='';try{Speech.abort()}catch{}void Talk.stop().catch(()=>{});}
  function reply(text:string){if(talkBack){void Talk.stop().then(()=>Talk.speak(text.slice(0,3000),{language:'en-US',useApplicationAudioSession:false})).catch(()=>{});}}
  function connectionNeeded(text:string){
  const food=/\b(pizza|food|meal|restaurant|ubereats|uber eats|doordash)\b/i.test(text);
@@ -82,7 +112,7 @@ function Workspace(){
  setMemories(data);setLoaded(true);}catch(e){setError(errorMessage(e))}})();
  const subscription=AppState.addEventListener('change',state=>{if(state!=='active')stopVoice()});
  return ()=>{subscription.remove();pendingTranscript.current='';Speech.abort();void Talk.stop()};},[]);
- useEffect(()=>{if(screen!=='home'){Speech.abort();setListening(false);setVoicePending(false);voiceLock.current=false}},[screen]);
+ useEffect(()=>{if(screen!=='home'){void gemini.current?.stop();Speech.abort();setListening(false);setVoicePending(false);voiceLock.current=false}},[screen]);
  const updateStep=(i:number,state:Step['state'],detail:string)=>setRun(r=>r?{...r,steps:r.steps.map((n,j)=>j===i?{...n,state,detail}:n)}:r);
  const complete=(receipt:string)=>{updateStep(2,'done',receipt);setRun(r=>r?{...r,status:'done',receipt}:r);reply(receipt)};
  async function submit(spoken?:string,channel:'sms'|'whatsapp'='sms',recipientName?:string){
@@ -149,15 +179,16 @@ function Workspace(){
  async function removeMemory(id:string){if(lock.current)return;lock.current=true;setBusy(true);try{const next=memories.filter(m=>m.id!==id);await AsyncStorage.setItem(KEY,JSON.stringify(next));setMemories(next)}catch(e){setError(errorMessage(e))}finally{lock.current=false;setBusy(false)}}
  const blocked=busy||run?.status==='approval';
  return <SafeAreaView style={s.safe}><StatusBar style="light"/><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.page}>
- <View style={[s.header,{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}]}><Text style={s.brand}>VDX</Text><Account/></View>
+ <View style={[s.header,{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}]}><Text style={s.brand}>VDX</Text><Account onOpen={()=>stopVoice()}/></View>
  {!!error&&<Text accessibilityRole="alert" style={s.error}>{error}</Text>}
  {screen==='home'&&<View style={{minHeight:440,justifyContent:'center',alignItems:'center',gap:18}}>
  <Text style={s.statement}>Just say it.</Text>
- <VoiceCloud listening={listening} pending={voicePending} disabled={!!blocked} onPress={()=>void voice()}/>
+ <VoiceCloud listening={geminiState==='listening'} pending={false} disabled={!!blocked} label={geminiState==='connecting'?'Connecting… Tap to cancel':geminiState==='speaking'?'VDX is speaking · Tap to end':geminiState==='listening'?'Listening · Tap to end':'Tap to speak'} onPress={()=>void startGemini()}/>
+ {!!geminiReply&&<Text accessibilityLiveRegion="polite" style={[s.body,{textAlign:'center'}]}>{geminiReply}</Text>}
  {!!input&&<Text selectable style={[s.body,{textAlign:'center'}]}>“{input}”</Text>}
- <Pressable accessibilityRole="button" onPress={()=>setTyping(!typing)}><Text style={s.voiceControl}>{typing?'Hide keyboard entry':'Type instead'}</Text></Pressable>
+ <Pressable accessibilityRole="button" onPress={()=>{stopVoice();setTyping(!typing)}}><Text style={s.voiceControl}>{typing?'Hide keyboard entry':'Type instead'}</Text></Pressable>
  {typing&&<View style={{width:'100%'}}><TextInput accessibilityLabel="Your request" value={input} onChangeText={setInput} editable={!blocked&&!listening} placeholder="What would you like to do?" style={s.input}/><Button title="Continue" onPress={()=>void submit()} disabled={!!blocked||listening||voicePending||!input.trim()}/></View>}
- <Pressable accessibilityRole="switch" accessibilityState={{checked:talkBack}} onPress={()=>{setTalkBack(!talkBack);void Talk.stop()}}><Text style={s.voiceControl}>Spoken replies {talkBack?'on':'off'}</Text></Pressable>
+ {geminiState==='idle'&&<Pressable accessibilityRole="switch" accessibilityState={{checked:talkBack}} onPress={()=>{setTalkBack(!talkBack);void Talk.stop()}}><Text style={s.voiceControl}>Task read-aloud {talkBack?'on':'off'}</Text></Pressable>}
  </View>}
  {screen==='run'&&(!run?<Text style={s.body}>Start a request from Home to see its node tree.</Text>:<><Text accessibilityRole="header" style={s.heading}>Your run</Text><Text style={s.body}>{run.intent.kind.toUpperCase()}</Text><Text accessibilityLiveRegion="polite" style={s.badge}>{run.status==='approval'?'Waiting for approval':run.status}</Text><Button title={stepsView?'Show node tree':'Show accessible steps'} secondary onPress={()=>setStepsView(!stepsView)}/>
  <View style={{marginVertical:20}}>{run.steps.map((step,i)=><View key={i}><Pressable accessibilityRole="button" accessibilityLabel={`${i+1}. ${step.title}. ${step.state}. ${step.detail}`} accessibilityState={{selected:selected===i}} onPress={()=>setSelected(i)} style={[s.node,{backgroundColor:step.state==='done'?colors.lime:step.state==='blocked'?'#453317':'#21182E'},selected===i&&{borderColor:colors.purple}]}><Text style={s.tileTitle}>{step.state==='done'?'✓':step.state==='failed'?'!':`${i+1}`}</Text><View style={{flex:1}}><Text style={s.tileTitle}>{step.title}</Text><Text style={s.small}>{step.state}</Text></View></Pressable>{i<run.steps.length-1&&!stepsView&&<Text accessible={false} style={s.edge}>│{ '\n'}▼</Text>}{stepsView&&<View style={{height:12}}/>}</View>)}</View>
@@ -167,6 +198,8 @@ function Workspace(){
  </>)}
  {screen==='memory'&&<><Text accessibilityRole="header" style={s.hero}>Your memory.</Text><Text style={s.body}>Saved only on this device. No cloud sync. These notes use ordinary app storage; do not store passwords or secrets.</Text>{loaded&&!memories.length&&<Text style={s.body}>No memories yet. Try “remember I parked on level 2”.</Text>}{memories.map(m=><View key={m.id} style={s.card}><Text selectable style={s.body}>{m.text}</Text><Text style={s.small}>{new Date(m.createdAt).toLocaleString()}</Text><Button title="Delete memory" secondary disabled={!!blocked} onPress={()=>Alert.alert('Delete this memory?','This cannot be undone.',[{text:'Keep',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>void removeMemory(m.id)}])}/></View>)}</>}
  </ScrollView><View style={s.nav}>{(['home','run','memory'] as const).map(tab=><Pressable key={tab} accessibilityRole="tab" accessibilityState={{selected:screen===tab}} onPress={()=>setScreen(tab)} style={[s.navItem,screen===tab&&{backgroundColor:'#21142F'}]}><Text style={{color:colors.purple,fontWeight:'700'}}>{tab==='run'?'Your run':tab==='home'?'Home':'Memory'}</Text></Pressable>)}</View>
+ <Modal visible={voiceNotice} transparent animationType="slide" onRequestClose={()=>setVoiceNotice(false)}><SafeAreaView style={s.backdrop}><View style={s.modal}><View style={s.sheet}><Text style={s.heading}>Talk with VDX</Text><Text style={s.body}>Your voice is sent to Google Gemini during the conversation. VDX keeps the conversation temporary and stops the microphone when you leave the app. Review any task before it takes action.</Text><Button title="Start conversation" onPress={()=>{voiceConsent.current=true;setVoiceNotice(false);void startGemini()}}/><Button title="Not now" secondary onPress={()=>setVoiceNotice(false)}/></View></View></SafeAreaView></Modal>
+ <Modal visible={!!voiceProposal} transparent animationType="slide" onRequestClose={()=>setVoiceProposal(null)}><SafeAreaView style={s.backdrop}><View style={s.modal}><View style={s.sheet}><Text style={s.heading}>{voiceProposal?.kind==='unavailable'?'Service needed':'Review your request'}</Text><Text style={s.body}>{voiceProposal?.kind==='message'?`${voiceProposal.channel}: ${voiceProposal.recipient}\n${voiceProposal.body}`:voiceProposal?.kind==='call'?`Call ${voiceProposal.recipient}`:voiceProposal?.text}</Text><Text style={s.small}>Nothing has been executed. {voiceProposal?.kind==='remember'?'Continue saves this note on your device.':'Phone actions will show a final approval before opening another app.'}</Text><Button title={voiceProposal?.kind==='unavailable'?'Check availability':'Continue'} onPress={()=>void reviewVoiceProposal()}/><Button title="Cancel" secondary onPress={()=>setVoiceProposal(null)}/></View></View></SafeAreaView></Modal>
  <Modal visible={!!contactTask&&!connection} transparent animationType="slide" onRequestClose={()=>{setContactTask(null);setContactOptions([])}}><SafeAreaView style={s.backdrop}><ScrollView contentContainerStyle={s.modal}><View style={s.sheet}><Text style={s.heading}>Choose {contactTask?.recipient}</Text><Text style={s.body}>Select the person you mean. Only your selection is used on this phone.</Text>{contactOptions.map((p,i)=><Button key={i} title={`${p.name} · ${p.number}`} onPress={()=>void resumeContact(p.number,p.name)}/>)}<Button title={picking?'Opening contacts…':'Choose from Contacts'} disabled={picking} onPress={()=>void pickContact()}/><Button title="Cancel" secondary disabled={picking} onPress={()=>{setContactTask(null);setContactOptions([])}}/></View></ScrollView></SafeAreaView></Modal>
  <Modal visible={!!connection} transparent animationType="slide" onRequestClose={()=>{setConnection(null);void Talk.stop()}}><SafeAreaView style={s.backdrop}><View style={s.modal}><View style={s.sheet}><Text style={s.heading}>{connection?.title}</Text><Text style={s.body}>{connection?.message}</Text>{connection?.settings?<Button title="Open Settings" onPress={()=>{void Talk.stop();void Linking.openSettings().catch(()=>setError('Please open your phone Settings and select VDX Elastic.'));setConnection(null)}}/>:connection?.unavailable?<Text style={s.badge}>NOT AVAILABLE YET</Text>:null}<Button title="Got it" secondary onPress={()=>{setConnection(null);void Talk.stop()}}/></View></View></SafeAreaView></Modal>
  <Modal visible={run?.status==='approval'} transparent animationType="slide" onRequestClose={cancel} onShow={()=>reply(run?.intent.kind==='message'?`Prepare a ${run.channel==='whatsapp'?'WhatsApp':'text'} message to ${run.recipientName||run.intent.phone}: ${run.intent.body}. ${run.channel==='whatsapp'?'You will still tap Send in WhatsApp. ':''}Continue?`:'Review the phone number, then approve to open the dialer.')}><SafeAreaView style={s.backdrop}><ScrollView contentContainerStyle={s.modal} accessibilityViewIsModal><View style={s.sheet}><Text accessibilityRole="header" style={s.heading}>You are in control.</Text><Text selectable style={s.body}>{run?.intent.kind==='call'?`Open the phone interface for ${run.intent.phone}? The operating system may show a call confirmation.`:run?.intent.kind==='message'?`Prepare a ${run.channel==='whatsapp'?'WhatsApp':'SMS'} message to ${run.recipientName?`${run.recipientName} (${run.intent.phone})`:run.intent.phone}:\n\n${run.intent.body}`:''}</Text><Text style={s.small}>This is a real device handoff. Call connection and message delivery cannot be verified by Elastic.</Text><Button title={listening?"Stop listening":voicePending?"Starting microphone…":"Say yes or no"} secondary disabled={busy||voicePending} onPress={()=>void voice(true)}/><Button title="Approve and continue" onPress={()=>void approve()} disabled={busy}/><Button title="Cancel request" secondary onPress={cancel} disabled={busy}/></View></ScrollView></SafeAreaView></Modal>

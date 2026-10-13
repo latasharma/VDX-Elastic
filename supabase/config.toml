@@ -1,0 +1,5 @@
+project_id = "vdx-elastic"
+
+[functions.gemini-session]
+# The function verifies the bearer token using auth.getUser(); supports ES256 JWTs.
+verify_jwt = false

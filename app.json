@@ -58,7 +58,18 @@
           "contactsPermission": "Allow VDX to use the contact you choose for your call or message."
         }
       ],
-      "./plugins/withWhatsApp"
+      "./plugins/withWhatsApp",
+      [
+        "react-native-audio-api",
+        {
+          "iosBackgroundMode": false,
+          "iosMicrophonePermission": "Allow VDX to send your voice to Gemini while you have a conversation open.",
+          "androidPermissions": [
+            "android.permission.RECORD_AUDIO"
+          ],
+          "androidForegroundService": false
+        }
+      ]
     ]
   }
 }
