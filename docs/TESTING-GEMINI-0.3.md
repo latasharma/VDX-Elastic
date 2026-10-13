@@ -2,8 +2,9 @@
 
 This release needs a new native installation. Old TestFlight/Play builds do not contain Gemini audio support.
 
-Android APK build: https://expo.dev/accounts/latasharma/projects/vdx-elastic/builds/4a016695-f64d-41c8-930e-449faf3b9e39 (build 7; wait for Finished before downloading).
-iOS: version 0.3.0, build 8. Distribution status must be checked separately; an Xcode archive is not automatically a TestFlight release.
+Android APK build: https://expo.dev/accounts/latasharma/projects/vdx-elastic/builds/4a016695-f64d-41c8-930e-449faf3b9e39 (build 7; finished successfully).
+Direct APK: https://expo.dev/artifacts/eas/2Wqu-LzgxdwXuef1zzHHBtBjDXWWogChDlKLcER2XeA.apk
+iOS: version 0.3.0, build 8 archived successfully and uploaded to Apple on October 13, 2026. TestFlight processing/availability has not yet been verified. Upload warnings reported missing dSYMs for prebuilt React, Hermes, and audio codec frameworks; upload itself succeeded.
 
 1. Sign in to VDX with your existing account.
 2. Tap the voice bubble. Review the Gemini notice and allow the microphone.
